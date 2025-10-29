@@ -1,10 +1,15 @@
 package com.example.musicplayer;
 
+import static android.provider.UserDictionary.Words._ID;
+
 import android.Manifest;
 
+import android.annotation.SuppressLint;
+import android.content.ContentUris;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 
@@ -35,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<Audiomodel> songlist = new ArrayList<>();
     Musiclistadapter adapter;
 
+    @SuppressLint("NotifyDataSetChanged")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
 
         adapter = new Musiclistadapter(songlist);
         binding.recyclerview.setAdapter(adapter);
+        //Uri audioUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, Long.parseLong(_ID)); //TODO : some instruction to follow
 
 
         if (checkpermision() == false) {
@@ -58,21 +65,35 @@ public class MainActivity extends AppCompatActivity {
         }
         String[] projection = {
                 MediaStore.Audio.Media.TITLE,
-                MediaStore.Audio.Media.DATA,
+                MediaStore.Audio.Media.DATA, // TODO : change this like (This line only works for android 10- mobiles)
                 MediaStore.Audio.Media.DURATION
         };
-        String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
-        Cursor cursor = getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, projection, selection, null, null);
+        String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0"; // Collects actual music files (NOT notification and ringtone files)
+        Cursor cursor = getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI , projection, selection, null, null); //TODO : Change the sort order in to "MediaStore.Audio.Media.TITLE + " ASC" instead of null
 
-        while (cursor.moveToNext()) {
-            Audiomodel songdata = new Audiomodel(cursor.getString(1), cursor.getString(0), cursor.getString(2));
-            if (new File(songdata.getPath()).exists())
-                songlist.add(songdata);
+
+        // query(...) = is a request to android for a specific data , for this time it was an audio.
+        //getContentResolver() = a built-in function to collect the same query in a device.
+        //MediaStore.Audio.Media.EXTERNAL_CONTENT_URI = this tells to collect audio stored in external device.
+        //Cursor = is a pointer that collects all about the audio's file info (Title, Duration, path), BUT DOESN'T DISPLAY BY IT SELF.
+
+
+        while (cursor.moveToNext()){ // “Keep moving to the next row in the cursor, until there are no more rows (audio) left"
+            Audiomodel songdata = new Audiomodel(cursor.getString(1), // index =1, MediaStore.Audio.Media.DATA
+                                                 cursor.getString(0), // index =0, MediaStore.Audio.Media.TITLE
+                                                 cursor.getString(2));// index =2, MediaStore.Audio.Media.DURATION (CREATING A SONG OBJECT WITH (PATH,TITLE,DURATION)
+
+
+            if (new File(songdata.getPath()).exists()) { // this condition checks weather the audio is still in the device or not
+                songlist.add(songdata); // if the IF condition is true and the song exist , add it into the music player application
+            }
+            adapter.notifyDataSetChanged(); // Tells the RecyclerView: “Hey, my data has changed — refresh the list.”
         }
+
         if (songlist.size() == 0) {
-            binding.nosongfound.setVisibility(View.VISIBLE);
+            binding.nosongfound.setVisibility(View.VISIBLE); // If there is no audio in the device display NOSONGFOUND message
         } else {
-            binding.recyclerview.setLayoutManager(new LinearLayoutManager(this));
+            binding.recyclerview.setLayoutManager(new LinearLayoutManager(this)); // Show the list vertically one item over another
             binding.recyclerview.setAdapter(new Musiclistadapter(songlist, getApplicationContext()));
         }
 
@@ -122,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {  //is a lifecycle method that is called when your activity comes to the foreground and becomes interactive again
         super.onResume();
         if (binding.recyclerview != null) {
-            binding.recyclerview.setAdapter(new Musiclistadapter(songlist, getApplicationContext()));
+            //binding.recyclerview.setAdapter(new Musiclistadapter(songlist, getApplicationContext()));
         }
     }
 
