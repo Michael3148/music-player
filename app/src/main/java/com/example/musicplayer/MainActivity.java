@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
 
         // query(...) = is a request to android for a specific data , for this time it was an audio.
         //getContentResolver() = a built-in function to collect the same query in a device.
-        //MediaStore.Audio.Media.EXTERNAL_CONTENT_URI = this tells to collect audio stored in external device.
+        //MediaStore.Audio.Media.EXTERNAL_CONTENT_URI = this tells to collect audio stored in external device.("MediaStore.Audio.Media.INTERNAL_CONTENT_URI" =this API will gives you some android basic songs like notification and closing)
         //Cursor = is a pointer that collects all about the audio's file info (Title, Duration, path), BUT DOESN'T DISPLAY BY IT SELF.
 
 
