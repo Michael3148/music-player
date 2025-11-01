@@ -83,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
                                                  cursor.getString(0), // index =0, MediaStore.Audio.Media.TITLE
                                                  cursor.getString(2));// index =2, MediaStore.Audio.Media.DURATION (CREATING A SONG OBJECT WITH (PATH,TITLE,DURATION)
 
+            //song data = is an object of type Audiomodel, representing one single song at that moment
 
             if (new File(songdata.getPath()).exists()) { // this condition checks weather the audio is still in the device or not
                 songlist.add(songdata); // if the IF condition is true and the song exist , add it into the music player application
